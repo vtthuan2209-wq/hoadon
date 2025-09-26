@@ -1,300 +1,214 @@
 <!DOCTYPE html>
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(() => console.log("SW registered"))
-    .catch(err => console.log(err));
-}
-</script>
 <html lang="vi">
 <head>
-	<link rel="manifest" href="manifest.json">
+<meta charset="UTF-8">
+<title>WebApp Hóa Đơn</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#2a8bdc">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta charset="UTF-8">
-  <title>WebApp Hóa Đơn</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family:"Times New Roman",serif; background:#f0f0f0; margin:0; padding:10px; }
-    #invoice { background:#fff; padding:12px; max-width:100%; margin:auto; border:1px solid #ccc; font-size:14px; font-family:"Times New Roman",serif; }
-    h1 { text-align:center; margin:8px 0; font-size:22px; }
-    table { 
-  width:100%; 
-  border-collapse:collapse; 
-  margin-top:6px; 
-  font-size:12px; 
-  table-layout:fixed; 
-}
-th, td { 
-  border:1px solid #000; 
-  padding:2px 0px;   /* giảm padding để hàng thấp hơn */
-  text-align:center; 
-  line-height:1.2;   /* giảm chiều cao dòng */
-}
-td input { 
-  width:100%; 
-  border:none; 
-  text-align:right; 
-  font-size:12px;    /* giảm font để ô nhỏ lại */
-  padding:2px;       /* giảm padding trong ô nhập */
-  box-sizing:border-box; 
-  height:16px;       /* chiều cao cố định nhỏ gọn */
-}
-    .info { margin-bottom:2px; font-size:13px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-    .info label { font-weight:bold; margin-right:4px; }
-    .info input { flex:1; min-width:100px; border:1px solid #ccc; padding:2px 4px; font-size:12px; }
-    .controls { margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
-    .btn { flex:1; min-width:120px; padding:10px; border:none; border-radius:20px;
-           background:#2a8bdc; color:#fff; font-size:14px; font-weight:bold; cursor:pointer; text-align:center; }
-    .btn-danger{ background:#e74c3c; }
-    .footer{ margin-top:10px; font-size:12px; display:flex; justify-content:space-between; }
-    .footer .date { text-align:left; }
-    .footer .writer { text-align:center; margin-right:30px; }
-    #previewImage { margin-top:10px; max-width:100%; display:none; border:1px solid #ccc; }
-    #downloadLink { display:none; text-align:center; margin-top:8px; font-size:14px; color:blue; }
+<link rel="manifest" href="manifest.json">
+<style>
+body { font-family:"Times New Roman",serif; background:#f0f0f0; margin:0; padding:10px; }
+#invoice { background:#fff; padding:12px; max-width:100%; margin:auto; border:1px solid #ccc; font-size:14px; font-family:"Times New Roman",serif; }
+h1 { text-align:center; margin:8px 0; font-size:22px; }
+table { width:100%; border-collapse:collapse; margin-top:6px; font-size:12px; table-layout:fixed; }
+th, td { border:1px solid #000; padding:2px 0px; text-align:center; line-height:1.2; }
+td input { width:100%; border:none; text-align:right; font-size:12px; padding:1px; box-sizing:border-box; height:18px; }
+.info { margin-bottom:2px; font-size:13px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.info label { font-weight:bold; margin-right:4px; }
+.info input { flex:1; min-width:100px; border:1px solid #ccc; padding:2px 4px; font-size:12px; height:18px; }
+.controls { margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+.btn { flex:1; min-width:120px; padding:10px; border:none; border-radius:20px; background:#2a8bdc; color:#fff; font-size:14px; font-weight:bold; cursor:pointer; text-align:center; }
+.btn-danger{ background:#e74c3c; }
+.footer{ margin-top:10px; font-size:12px; display:flex; justify-content:space-between; }
+.footer .date { text-align:left; }
+.footer .writer { text-align:center; margin-right:30px; }
+#previewImage { margin-top:10px; max-width:100%; display:none; border:1px solid #ccc; }
+#downloadLink { display:none; text-align:center; margin-top:8px; font-size:14px; color:blue; }
+#productTable th:nth-child(2), #productTable td:nth-child(2) { width:55%; }
+#productTable th:nth-child(3), #productTable td:nth-child(3) { width:12%; }
+#productTable th:nth-child(4), #productTable td:nth-child(4) { width:25%; }
+.textlike { border:none; outline:none; background:transparent; font-size:12px; height:18px; font-family:"Times New Roman",serif; }
+#hotline { padding:1px 2px; height:18px; line-height:18px; font-size:12px; width:80px; box-sizing:border-box; }
 
-    /* Tùy chỉnh độ rộng cột */
-    #productTable th:nth-child(2), #productTable td:nth-child(2) { width:55%; }
-    #productTable th:nth-child(3), #productTable td:nth-child(3) { width:12%; }
-    #productTable th:nth-child(4), #productTable td:nth-child(4) { width:25%; }
-
-    /* Ẩn viền cho input giống chữ */
-    .textlike {
-      border:none; 
-      outline:none; 
-      background:transparent; 
-      font-size:12px; 
-      font-family:"Times New Roman",serif;
-    }
-#hotline {
-  padding:1px 2px;   /* giảm khoảng cách trong ô */
-  height:16px;       /* chiều cao thấp hơn */
-  line-height:16px;  /* căn chữ giữa */
-  font-size:12px;
-  box-sizing:border-box; 
+@media(max-width:480px){
+  #invoice{padding:8px;font-size:12px;}
+  h1{font-size:18px;}
+  table{font-size:12px;}
+  td input, .info input, .textlike{font-size:12px; height:18px;}
+  .controls{flex-direction:column;}
+  .btn{min-width:100%;font-size:13px;padding:6px;}
 }
-    @media(max-width:480px){
-      #invoice{padding:8px;font-size:12px;}
-      h1{font-size:18px;}
-      table{font-size:12px;}
-      td input{font-size:12px;}
-      .controls{flex-direction:column;}
-      .btn{min-width:100%;font-size:13px;padding:6px;}
-    }
-  </style>
+</style>
 </head>
 <body>
-  <div id="invoice">
-    <!-- Header -->
-    <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px;">
-      <div style="flex:0 0 80px;">
-        <img src="data:image/png;base64,..." alt="Logo" style="max-width:80px;">
+
+<div id="invoice">
+  <!-- Header -->
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px;">
+    <div style="flex:0 0 80px;">
+      <img src="data:image/png;base64,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" alt="Logo" style="max-width:80px;">
+    </div>
+    <div style="text-align:right; flex:1; font-size:13px;">
+      <div style="font-weight:bold; font-size:16px;">CÔNG TY TNHH GỖ MỘT TẤM</div>
+      <div>Hotline: 
+        <input type="text" id="hotline" value="0568.638.638" class="textlike">
       </div>
-      <div style="text-align:right; flex:1; font-size:13px;">
-        <div style="font-weight:bold; font-size:16px;">CÔNG TY TNHH GỖ MỘT TẤM</div>
-        <div>Hotline: 
-          <input type="text" id="hotline" value="0568.638.638" 
-                 class="textlike" style="text-align:right; width:70px;">
-        </div>
-        <div>Xưởng: 138/3 APĐ03, P. An Phú Đông, Tp.HCM</div>
-        <div>CH: 19 Hiệp Thành 43, P. Tân Thới Hiệp, Tp.HCM</div>
-      </div>
+      <div>Xưởng: 138/3 APĐ03, P. An Phú Đông, Tp.HCM</div>
+      <div>CH: 19 Hiệp Thành 43, P. Tân Thới Hiệp, Tp.HCM</div>
     </div>
+  </div>
 
-    <h1>HÓA ĐƠN</h1>
+  <h1>HÓA ĐƠN</h1>
 
-    <div class="info">
-      <label>Khách hàng:</label> <input type="text" id="customer" placeholder="Tên KH">
-    </div>
-    <div class="info">
-      <label>SĐT:</label> <input type="text" id="phone" placeholder="Số điện thoại">
-    </div>
-    <div class="info">
-      <label>ĐC:</label> <input type="text" id="address" placeholder="Địa chỉ" style="flex:1">
-    </div>
+  <div class="info"><label>Khách hàng:</label> <input type="text" id="customer" placeholder="Tên KH"></div>
+  <div class="info"><label>SĐT:</label> <input type="text" id="phone" placeholder="Số điện thoại"></div>
+  <div class="info"><label>ĐC:</label> <input type="text" id="address" placeholder="Địa chỉ"></div>
 
-    <div style="overflow-x:auto;">
-      <table id="productTable">
-        <thead>
-          <tr>
-            <th>STT</th>
-            <th>Tên Sản Phẩm</th>
-            <th>SL</th>
-            <th>Thành tiền</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <table style="margin-top:0px;">
-      <tr>
-        <td colspan="3" style="text-align:right">Vận chuyển:</td>
-        <td><input type="text" id="shipping" value="0"></td>
-      </tr>
-      <tr>
-        <td colspan="3" style="text-align:right">TỔNG ĐƠN:</td>
-        <td><input type="text" id="totalOrder" value="0" readonly></td>
-      </tr>
-      <tr>
-        <td colspan="3" style="text-align:right">CỌC TRƯỚC:</td>
-        <td><input type="text" id="deposit" value="0"></td>
-      </tr>
-      <tr>
-        <td colspan="3" style="text-align:right">GIAO HÀNG THANH TOÁN:</td>
-        <td><input type="text" id="finalPay" value="0" readonly></td>
-      </tr>
+  <div style="overflow-x:auto;">
+    <table id="productTable">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Tên Sản Phẩm</th>
+          <th>SL</th>
+          <th>Thành tiền</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
     </table>
+  </div>
 
-    <div class="footer">
-      <div class="date">
-        <input type="text" id="dateField" class="textlike" style="text-align:left; width:200px;">
-      </div>
-      <div class="writer">
-        <div>Người viết hóa đơn</div>
-        <div><input type="text" id="writerName" value="Thiên" class="textlike" style="text-align:center; width:100px; margin-top:4px;"></div>
-      </div>
+  <table style="margin-top:0px;">
+    <tr><td colspan="3" style="text-align:right">Vận chuyển:</td><td><input type="text" id="shipping" value="0"></td></tr>
+    <tr><td colspan="3" style="text-align:right">TỔNG ĐƠN:</td><td><input type="text" id="totalOrder" value="0" readonly></td></tr>
+    <tr><td colspan="3" style="text-align:right">CỌC TRƯỚC:</td><td><input type="text" id="deposit" value="0"></td></tr>
+    <tr><td colspan="3" style="text-align:right">GIAO HÀNG THANH TOÁN:</td><td><input type="text" id="finalPay" value="0" readonly></td></tr>
+  </table>
+
+  <div class="footer">
+    <div class="date"><input type="text" id="dateField" class="textlike" style="text-align:left; width:200px;"></div>
+    <div class="writer">
+      <div>Người viết hóa đơn</div>
+      <div><input type="text" id="writerName" value="Thiên" class="textlike" style="text-align:center; width:100px; margin-top:4px;"></div>
     </div>
-
-    <div style="margin-top:6px; font-size:12px;">
-      <p><b>Tên: Đinh Duy Luân</b><br>STK: 974666<br>Ngân hàng Á Châu (ACB)</p>
-    </div>
   </div>
 
-  <!-- Nút thêm / xóa sản phẩm -->
-  <div class="controls">
-    <button id="addProduct" class="btn">➕ Thêm sản phẩm</button>
-    <button id="removeProduct" class="btn btn-danger">❌ Xóa sản phẩm</button>
+  <div style="margin-top:6px; font-size:12px;">
+    <p><b>Tên: Đinh Duy Luân</b><br>STK: 974666<br>Ngân hàng Á Châu (ACB)</p>
   </div>
+</div>
 
-  <!-- Các nút lưu, xuất -->
-  <div class="controls">
-    <button class="btn" onclick="saveInvoice()">💾 Lưu tạm</button>
-    <button class="btn" onclick="exportImage()">🖼 Xuất ảnh</button>
-    <button class="btn btn-danger" onclick="clearInvoice()">🗑 Xóa</button>
-  </div>
+<div class="controls">
+  <button id="addProduct" class="btn">➕ Thêm sản phẩm</button>
+  <button id="removeProduct" class="btn btn-danger">❌ Xóa sản phẩm</button>
+</div>
 
-  <img id="previewImage" alt="Preview hóa đơn">
-  <a id="downloadLink">⬇️ Tải ảnh về máy</a>
+<div class="controls">
+  <button class="btn" onclick="saveInvoice()">💾 Lưu tạm</button>
+  <button class="btn" onclick="exportImage()">🖼 Xuất ảnh</button>
+  <button class="btn btn-danger" onclick="clearInvoice()">🗑 Xóa</button>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script>
-    function formatNumber(value){
-      if(!value) return "0";
-      return Number(value.toString().replace(/\D/g,"")||0).toLocaleString("vi-VN");
-    }
-    function parseNumber(value){
-      return parseInt(value.toString().replace(/\D/g,"")||0);
-    }
+<img id="previewImage" alt="Preview hóa đơn">
+<a id="downloadLink">⬇️ Tải ảnh về máy</a>
 
-    function addRow(product="", qty=0, price=0){
-      let tbody = document.querySelector("#productTable tbody");
-      let rowCount = tbody.rows.length + 1;
-      let row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${rowCount}</td>
-        <td><input type="text" value="${product}" placeholder="Tên SP"></td>
-        <td><input type="number" min="0" maxlength="3" class="qty" value="${qty}" style="text-align:center"></td>
-        <td><input type="text" class="price" value="${formatNumber(price)}"></td>
-      `;
-      tbody.appendChild(row);
-      row.querySelector(".qty").addEventListener("input", calculateTotal);
-      row.querySelector(".price").addEventListener("input", calculateTotal);
-      calculateTotal();
-    }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+function formatNumber(value){ return Number(value.toString().replace(/\D/g,"")||0).toLocaleString("vi-VN"); }
+function parseNumber(value){ return parseInt(value.toString().replace(/\D/g,"")||0); }
 
-    function removeRow(){
-      let tbody = document.querySelector("#productTable tbody");
-      if(tbody.rows.length > 0){
-        tbody.deleteRow(-1);
-        renumberRows();
-        calculateTotal();
-      }
-    }
+function addRow(product="", qty=0, price=0){
+  let tbody = document.querySelector("#productTable tbody");
+  let rowCount = tbody.rows.length + 1;
+  let row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${rowCount}</td>
+    <td><input type="text" value="${product}" placeholder="Tên SP"></td>
+    <td><input type="number" min="0" class="qty" value="${qty}" style="text-align:center"></td>
+    <td><input type="text" class="price" value="${formatNumber(price)}"></td>
+  `;
+  tbody.appendChild(row);
+  row.querySelector(".qty").addEventListener("input", calculateTotal);
+  row.querySelector(".price").addEventListener("input", calculateTotal);
+  calculateTotal();
+}
 
-    function renumberRows(){
-      document.querySelectorAll("#productTable tbody tr").forEach((row,i)=>{
-        row.cells[0].textContent = i+1;
-      });
-    }
+function removeRow(){
+  let tbody = document.querySelector("#productTable tbody");
+  if(tbody.rows.length>0){ tbody.deleteRow(-1); renumberRows(); calculateTotal(); }
+}
 
-    function calculateTotal(){
-      let rows = document.querySelectorAll("#productTable tbody tr");
-      let subtotal = 0;
-      rows.forEach(row=>{
-        let qty = parseNumber(row.querySelector(".qty").value)||0;
-        let price = parseNumber(row.querySelector(".price").value)||0;
-        subtotal += qty * price;
-        row.querySelector(".price").value = formatNumber(price);
-      });
-      let shipping = parseNumber(document.getElementById("shipping").value)||0;
-      let deposit = parseNumber(document.getElementById("deposit").value)||0;
-      let totalOrder = subtotal + shipping;
-      let finalPay = totalOrder - deposit;
-      document.getElementById("shipping").value = formatNumber(shipping);
-      document.getElementById("deposit").value = formatNumber(deposit);
-      document.getElementById("totalOrder").value = formatNumber(totalOrder);
-      document.getElementById("finalPay").value = formatNumber(finalPay);
-    }
+function renumberRows(){ document.querySelectorAll("#productTable tbody tr").forEach((row,i)=>{ row.cells[0].textContent=i+1; }); }
 
-    function saveInvoice(){
-      let data = {
-        hotline: document.getElementById("hotline").value,
-        customer: document.getElementById("customer").value,
-        phone: document.getElementById("phone").value,
-        address: document.getElementById("address").value,
-        shipping: document.getElementById("shipping").value,
-        deposit: document.getElementById("deposit").value,
-        date: document.getElementById("dateField").value,
-        writer: document.getElementById("writerName").value,
-        products: []
-      };
-      document.querySelectorAll("#productTable tbody tr").forEach(row=>{
-        data.products.push({
-          product: row.cells[1].querySelector("input").value,
-          qty: row.cells[2].querySelector("input").value,
-          price: row.cells[3].querySelector("input").value
-        });
-      });
-      localStorage.setItem("invoiceData", JSON.stringify(data));
-      alert("Đã lưu dữ liệu!");
-    }
+function calculateTotal(){
+  let rows = document.querySelectorAll("#productTable tbody tr");
+  let subtotal=0;
+  rows.forEach(row=>{
+    let qty=parseNumber(row.querySelector(".qty").value)||0;
+    let price=parseNumber(row.querySelector(".price").value)||0;
+    subtotal+=qty*price;
+    row.querySelector(".price").value=formatNumber(price);
+  });
+  let shipping=parseNumber(document.getElementById("shipping").value)||0;
+  let deposit=parseNumber(document.getElementById("deposit").value)||0;
+  let totalOrder=subtotal+shipping;
+  let finalPay=totalOrder-deposit;
+  document.getElementById("shipping").value=formatNumber(shipping);
+  document.getElementById("deposit").value=formatNumber(deposit);
+  document.getElementById("totalOrder").value=formatNumber(totalOrder);
+  document.getElementById("finalPay").value=formatNumber(finalPay);
+}
 
-    function clearInvoice(){
-      localStorage.removeItem("invoiceData");
-      alert("Đã xoá dữ liệu!");
-      location.reload();
-    }
+function saveInvoice(){
+  let data={
+    hotline:document.getElementById("hotline").value,
+    customer:document.getElementById("customer").value,
+    phone:document.getElementById("phone").value,
+    address:document.getElementById("address").value,
+    shipping:document.getElementById("shipping").value,
+    deposit:document.getElementById("deposit").value,
+    date:document.getElementById("dateField").value,
+    writer:document.getElementById("writerName").value,
+    products:[]
+  };
+  document.querySelectorAll("#productTable tbody tr").forEach(row=>{
+    data.products.push({
+      product:row.cells[1].querySelector("input").value,
+      qty:row.cells[2].querySelector("input").value,
+      price:row.cells[3].querySelector("input").value
+    });
+  });
+  localStorage.setItem("invoiceData",JSON.stringify(data));
+  alert("Đã lưu dữ liệu!");
+}
 
-    function exportImage(){
-      html2canvas(document.querySelector("#invoice"), {scale:2}).then(canvas => {
-        let imgData = canvas.toDataURL("image/png");
-        let img = document.getElementById("previewImage");
-        img.src = imgData;
-        img.style.display = "block";
-        let dlLink = document.getElementById("downloadLink");
-        dlLink.href = imgData;
-        dlLink.download = "hoadon.png";
-        dlLink.style.display = "block";
-        alert("Ảnh đã sẵn sàng! Trên iPhone: nhấn giữ ảnh để lưu hoặc bấm nút tải.");
-      });
-    }
+function clearInvoice(){ localStorage.removeItem("invoiceData"); alert("Đã xoá dữ liệu!"); location.reload(); }
 
-    document.getElementById("addProduct").addEventListener("click", ()=>addRow());
-    document.getElementById("removeProduct").addEventListener("click", removeRow);
-    document.getElementById("shipping").addEventListener("input", calculateTotal);
-    document.getElementById("deposit").addEventListener("input", calculateTotal);
+function exportImage(){
+  html2canvas(document.querySelector("#invoice"),{scale:2}).then(canvas=>{
+    let imgData=canvas.toDataURL("image/png");
+    let img=document.getElementById("previewImage");
+    img.src=imgData;
+    img.style.display="block";
+    let dlLink=document.getElementById("downloadLink");
+    dlLink.href=imgData;
+    dlLink.download="hoadon.png";
+    dlLink.style.display="block";
+    alert("Ảnh đã sẵn sàng! Trên iPhone: nhấn giữ ảnh để lưu hoặc bấm nút tải.");
+  });
+}
 
-    function getFullDateText(date){
-      const d = date.getDate();
-      const m = date.getMonth() + 1;
-      const y = date.getFullYear();
-      return `Ngày ${d} tháng ${m} năm ${y}`;
-    }
-    document.getElementById("dateField").value = getFullDateText(new Date());
+document.getElementById("addProduct").addEventListener("click",()=>addRow());
+document.getElementById("removeProduct").addEventListener("click",removeRow);
+document.getElementById("shipping").addEventListener("input",calculateTotal);
+document.getElementById("deposit").addEventListener("input",calculateTotal);
 
-    addRow();
-  </script>
+function getFullDateText(date){ const d=date.getDate(); const m=date.getMonth()+1; const y=date.getFullYear(); return `Ngày ${d} tháng ${m} năm ${y}`; }
+document.getElementById("dateField").value=getFullDateText(new Date());
+addRow();
+</script>
+
 </body>
 </html>
