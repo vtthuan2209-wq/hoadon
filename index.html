@@ -14,10 +14,31 @@ body { font-family:"Times New Roman",serif; background:#f0f0f0; margin:0; paddin
 h1 { text-align:center; margin:8px 0; font-size:22px; }
 table { width:100%; border-collapse:collapse; margin-top:6px; font-size:12px; table-layout:fixed; }
 th, td { border:1px solid #000; padding:2px 0px; text-align:center; line-height:1.2; }
-td input { width:95%; border:none; text-align:right; font-size:12px; box-sizing:border-box; height:18px; }
-.info { margin-bottom:2px; font-size:13px; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-.info label { font-weight:bold; margin-right:4px; }
-.info input { flex:1; min-width:100px; border:1px solid #ccc; padding:2px 4px; font-size:12px; height:18px; }
+td input { width:100%; border:none; text-align:right; font-size:12px; box-sizing:border-box; height:18px; }
+.info {
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.info .row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.info label {
+  font-weight: bold;
+  width: 100px;       /* tất cả label đều cùng chiều rộng */
+  text-align: left;
+}
+
+.info input {
+  flex: 1;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .controls { margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
 .btn { flex:1; min-width:120px; padding:10px; border:none; border-radius:20px; background:#2a8bdc; color:#fff; font-size:14px; font-weight:bold; cursor:pointer; text-align:center; }
 .btn-danger{ background:#e74c3c; }
@@ -62,9 +83,21 @@ td input { width:95%; border:none; text-align:right; font-size:12px; box-sizing:
 
   <h1>HÓA ĐƠN</h1>
 
-  <div class="info"><label>Khách hàng:</label> <input type="text" id="customer" placeholder="Tên KH"></div>
-  <div class="info"><label>SĐT:</label> <input type="text" id="phone" placeholder="Số điện thoại"></div>
-  <div class="info"><label>ĐC:</label> <input type="text" id="address" placeholder="Địa chỉ"></div>
+ <div class="info">
+  <div class="row">
+    <label>Khách hàng:</label>
+    <input type="text" placeholder="Tên KH">
+  </div>
+  <div class="row">
+    <label>Số điện thoại:</label>
+    <input type="text" placeholder="Số điện thoại">
+  </div>
+  <div class="row">
+    <label>Địa chỉ:</label>
+    <input type="text" placeholder="Địa chỉ">
+  </div>
+</div>
+
 
   <div style="overflow-x:auto;">
     <table id="productTable">
