@@ -125,7 +125,7 @@ function addRow(product="", qty=0, price=0){
   let row = document.createElement("tr");
   row.innerHTML = `
     <td>${rowCount}</td>
-    <td><input type="text" value="${product}" placeholder="Tên SP"></td>
+    <td><input type="text" value="${product}" placeholder=""></td>
     <td><input type="number" min="0" class="qty" value="${qty}" style="text-align:center"></td>
     <td><input type="text" class="price" value="${formatNumber(price)}"></td>
   `;
